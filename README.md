@@ -48,6 +48,7 @@ Standalone **Vite** (optional): **`npm run vite:dev`** — add the **`vite.confi
 | `server/.env` | `FRONTEND_ORIGIN` | Browser origin for split deployments; required to match exactly when **`CORS_STRICT=true`** in production |
 | `server/.env` | `CORS_STRICT` | When **`true`** and **`NODE_ENV=production`**, CORS allows only **`FRONTEND_ORIGIN`** for requests that send `Origin`. Default permissive **`origin: true`** otherwise |
 | `server/.env` | `TRUST_PROXY` | Set **`true`** behind a reverse proxy so client IP (**`req.ip`** / **`x-forwarded-for`**) reflects the real visitor for rate limiting |
+| `server/.env` | `LOG_LEVEL` | Pino / Fastify log level (`fatal` … `silent`). Default **info** in production, **debug** in dev. On **Cloud Run**, each line also includes **`service`** and **`revision`** (from **`K_SERVICE`** / **`K_REVISION`**) to filter in Logs Explorer. Raising the level to **`warn`** reduces HTTP and usage noise but hides **`info`** events (e.g. stream usage). |
 | `server/.env` | `BODY_LIMIT_BYTES` | Max JSON/raw body size for **`POST`** (default **524288**) |
 | `server/.env` | `REQUEST_TIMEOUT_MS` | Fastify global request timeout; **0** (default) = disabled so **SSE** streams are not cut off |
 | `server/.env` | `RATE_LIMIT_*` | **`RATE_LIMIT_WINDOW_MS`** (default **60000**), **`RATE_LIMIT_MAX_PER_WINDOW`** (**40**), **`RATE_LIMIT_MAX_TRACKED_IPS`** (**20000**) — see abuse section below |

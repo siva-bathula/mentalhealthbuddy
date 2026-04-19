@@ -2,6 +2,7 @@ import cors from "@fastify/cors";
 import "dotenv/config";
 import Fastify from "fastify";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { loadEnv, providerConfigError } from "./env.js";
@@ -35,8 +36,19 @@ const distDir = path.join(repoRoot, "dist");
 const hasDist = fs.existsSync(path.join(distDir, "index.html"));
 const isProduction = process.env.NODE_ENV === "production";
 
+/** Pino `base`: OS hostname is often `localhost` in containers; Cloud Run sets `K_SERVICE` / `K_REVISION`. */
+const loggerBase: Record<string, unknown> = {
+  pid: process.pid,
+  hostname: os.hostname(),
+};
+if (process.env.K_SERVICE) loggerBase.service = process.env.K_SERVICE;
+if (process.env.K_REVISION) loggerBase.revision = process.env.K_REVISION;
+
 const app = Fastify({
-  logger: true,
+  logger: {
+    level: env.logLevel,
+    base: loggerBase,
+  },
   bodyLimit: env.bodyLimitBytes,
   ...(env.requestTimeoutMs > 0 ? { requestTimeout: env.requestTimeoutMs } : {}),
   trustProxy: env.trustProxy,
@@ -622,7 +634,7 @@ if (!isProduction) {
   app.log.info(`Dev UI + API at http://127.0.0.1:${env.PORT} (Vite middleware)`);
 } else if (hasDist) {
   await registerStaticSpa(app, distDir);
-  app.log.info(`Serving static SPA from ${distDir}`);
+  app.log.debug(`Serving static SPA from ${distDir}`);
 } else {
   app.log.warn(
     `NODE_ENV=production but no ${distDir}/index.html — API only. Run vite build from repo root first.`,

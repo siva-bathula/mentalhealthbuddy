@@ -114,16 +114,6 @@ export function PlanMode({
     [store.conversations],
   );
 
-  const usageForThread = useMemo(() => {
-    if (surface !== "chat") return null;
-    const id =
-      interactionMode === "readonly" && readonlyConversationId
-        ? readonlyConversationId
-        : store.activeConversationId;
-    if (!id) return null;
-    return store.conversations.find((c) => c.id === id)?.llmTotals ?? null;
-  }, [surface, interactionMode, readonlyConversationId, store.activeConversationId, store.conversations]);
-
   const exportConversationId =
     surface === "chat"
       ? interactionMode === "readonly" && readonlyConversationId
@@ -427,9 +417,6 @@ export function PlanMode({
               return next;
             });
           }
-          if (import.meta.env.DEV) {
-            console.info("[plan] usage", piece.usage, piece.costUsd, piece.costInr);
-          }
         }
       }
       const finalMsgs: ChatMessage[] = [...nextUser, { role: "assistant", content: assistant }];
@@ -567,12 +554,6 @@ export function PlanMode({
             )}
         </div>
       </div>
-
-      {surface === "chat" && (
-        <p className="chatCostEstimate" role="status" aria-live="polite">
-          Cost estimate — ₹{(usageForThread?.costInr ?? 0).toFixed(2)}
-        </p>
-      )}
 
       <p className="panelSub chatScopeNote">
         Build a personal wellness plan through conversation — not therapy or a clinical program. Plans

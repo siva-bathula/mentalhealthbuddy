@@ -105,16 +105,6 @@ export function ChatMode({
     [store.conversations],
   );
 
-  const usageForThread = useMemo(() => {
-    if (surface !== "chat") return null;
-    const id =
-      interactionMode === "readonly" && readonlyConversationId
-        ? readonlyConversationId
-        : store.activeConversationId;
-    if (!id) return null;
-    return store.conversations.find((c) => c.id === id)?.llmTotals ?? null;
-  }, [surface, interactionMode, readonlyConversationId, store.activeConversationId, store.conversations]);
-
   const closeOverlay = useCallback(() => setSessionsOverlayOpen(false), []);
 
   const openSessionReadonly = useCallback(
@@ -356,9 +346,6 @@ export function ChatMode({
               return next;
             });
           }
-          if (import.meta.env.DEV) {
-            console.info("[chat] usage", piece.usage, piece.costUsd, piece.costInr);
-          }
         }
       }
       const finalMsgs: ChatMessage[] = [...nextUser, { role: "assistant", content: assistant }];
@@ -473,12 +460,6 @@ export function ChatMode({
           </button>
         </div>
       </div>
-
-      {surface === "chat" && (
-        <p className="chatCostEstimate" role="status" aria-live="polite">
-          Cost estimate — ₹{(usageForThread?.costInr ?? 0).toFixed(2)}
-        </p>
-      )}
 
       <p className="panelSub chatScopeNote">
         General wellness conversation — not therapy, diagnosis, or emergency response. Threads stay in

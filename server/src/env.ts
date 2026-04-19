@@ -28,6 +28,8 @@ export type Env = {
   GEMINI_MODEL: string;
   GEMINI_INPUT_USD_PER_1M: number | undefined;
   GEMINI_OUTPUT_USD_PER_1M: number | undefined;
+  /** Pino log level (e.g. `info`, `warn`, `debug`). */
+  logLevel: "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent";
 };
 
 function parsePositiveInt(raw: string | undefined, fallback: number, min: number, max: number): number {
@@ -84,6 +86,23 @@ export function loadEnv(): Env {
   const GEMINI_INPUT_USD_PER_1M = parsePrice("GEMINI_INPUT_USD_PER_1M");
   const GEMINI_OUTPUT_USD_PER_1M = parsePrice("GEMINI_OUTPUT_USD_PER_1M");
 
+  const allowedLevels = [
+    "fatal",
+    "error",
+    "warn",
+    "info",
+    "debug",
+    "trace",
+    "silent",
+  ] as const;
+  const rawLogLevel = process.env.LOG_LEVEL?.trim().toLowerCase();
+  const logLevel =
+    rawLogLevel && (allowedLevels as readonly string[]).includes(rawLogLevel)
+      ? (rawLogLevel as (typeof allowedLevels)[number])
+      : process.env.NODE_ENV === "production"
+        ? "info"
+        : "debug";
+
   return {
     PORT,
     FRONTEND_ORIGIN,
@@ -104,6 +123,7 @@ export function loadEnv(): Env {
     GEMINI_MODEL,
     GEMINI_INPUT_USD_PER_1M,
     GEMINI_OUTPUT_USD_PER_1M,
+    logLevel,
   };
 }
 

@@ -1,15 +1,17 @@
 {
   "hosting": {
-    "public": "firebase/hosting-public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      {
-        "source": "**",
-        "run": {
-          "serviceId": "mentalhealthbuddy",
-          "region": "asia-south1"
-        }
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [{
+      "source": "**",
+      "run": {
+        "serviceId": "mentalhealthbuddy",
+        "region": "asia-south1" 
       }
-    ]
+    }]
   }
 }
