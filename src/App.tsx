@@ -9,6 +9,7 @@ import { ReframeMode } from "./components/ReframeMode";
 import { MicroInterventionsModal } from "./components/MicroInterventionsModal";
 import type { CrisisSeverity } from "./lib/crisisSignals";
 import { mergeSeverity } from "./lib/crisisSignals";
+import './firebase';
 
 type Mode = "chat" | "plan" | "reframe";
 type AppScreen = "app" | "help";
