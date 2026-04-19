@@ -100,14 +100,10 @@ function trimMessagesForBudget(messages: ChatMessage[], maxMsgs: number): ChatMe
   return messages.slice(messages.length - maxMsgs);
 }
 
+/** Load store and reconcile active id when threads exist (no empty thread is auto-created). */
 export function ensureReadyReframeStore(): ReframeStoreV1 {
   let s = loadReframeStore();
-  if (s.conversations.length === 0) {
-    s = createReframeConversation(s);
-    persistReframeStore(s);
-    return s;
-  }
-  if (!s.activeConversationId) {
+  if (!s.activeConversationId && s.conversations.length > 0) {
     const pick = [...s.conversations].sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0];
     if (pick) {
       s = { ...s, activeConversationId: pick.id };
@@ -123,7 +119,9 @@ export function loadReframeStore(): ReframeStoreV1 {
     if (!raw) return emptyStore();
     const parsed = JSON.parse(raw) as ReframeStoreV1;
     if (parsed?.version !== 1 || !Array.isArray(parsed.conversations)) return emptyStore();
-    const conversations = parsed.conversations.filter(isValidConversation);
+    const conversations = parsed.conversations
+      .filter(isValidConversation)
+      .filter((c) => c.messages.length > 0);
     let activeConversationId = parsed.activeConversationId;
     if (activeConversationId && !conversations.some((c) => c.id === activeConversationId)) {
       activeConversationId = conversations.sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0]?.id ?? null;
@@ -201,13 +199,17 @@ export function persistReframeStore(store: ReframeStoreV1): void {
   persistReframeStoreRaw(ensureWithinLimits(store));
 }
 
-export function createReframeConversation(store: ReframeStoreV1): ReframeStoreV1 {
+/** New thread is only added with at least the first user turn (no empty sessions in the list). */
+export function createReframeConversation(
+  store: ReframeStoreV1,
+  initialMessages: ChatMessage[] = [],
+): ReframeStoreV1 {
   const id = crypto.randomUUID();
   const now = Date.now();
   const conv: StoredReframeConversation = {
     id,
-    title: "New thought",
-    messages: [],
+    title: deriveTitle(initialMessages),
+    messages: initialMessages,
     lastAccessedAt: now,
     updatedAt: now,
   };
@@ -240,19 +242,11 @@ export function removeReframeConversation(store: ReframeStoreV1, conversationId:
     activeConversationId =
       [...conversations].sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0]?.id ?? null;
   }
-  let next: ReframeStoreV1 = ensureWithinLimits({
+  return ensureWithinLimits({
     ...store,
     conversations,
     activeConversationId,
   });
-  if (next.conversations.length === 0) {
-    next = createReframeConversation({
-      ...next,
-      conversations: [],
-      activeConversationId: null,
-    });
-  }
-  return next;
 }
 
 export function upsertReframeActiveMessages(store: ReframeStoreV1, messages: ChatMessage[]): ReframeStoreV1 {

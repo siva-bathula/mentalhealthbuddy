@@ -104,15 +104,10 @@ function trimMessagesForBudget(messages: ChatMessage[], maxMsgs: number): ChatMe
   return messages.slice(messages.length - maxMsgs);
 }
 
-/** Load store and guarantee at least one conversation + valid active id when possible. */
+/** Load store and reconcile active id when threads exist (no empty thread is auto-created). */
 export function ensureReadyPlanStore(): PlanStoreV1 {
   let s = loadPlanStore();
-  if (s.conversations.length === 0) {
-    s = createPlanConversation(s);
-    persistPlanStore(s);
-    return s;
-  }
-  if (!s.activeConversationId) {
+  if (!s.activeConversationId && s.conversations.length > 0) {
     const pick = [...s.conversations].sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0];
     if (pick) {
       s = { ...s, activeConversationId: pick.id };
@@ -128,7 +123,9 @@ export function loadPlanStore(): PlanStoreV1 {
     if (!raw) return emptyStore();
     const parsed = JSON.parse(raw) as PlanStoreV1;
     if (parsed?.version !== 1 || !Array.isArray(parsed.conversations)) return emptyStore();
-    const conversations = parsed.conversations.filter(isValidConversation);
+    const conversations = parsed.conversations
+      .filter(isValidConversation)
+      .filter((c) => c.messages.length > 0);
     let activeConversationId = parsed.activeConversationId;
     if (activeConversationId && !conversations.some((c) => c.id === activeConversationId)) {
       activeConversationId = conversations.sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0]?.id ?? null;
@@ -206,13 +203,17 @@ export function persistPlanStore(store: PlanStoreV1): void {
   persistPlanStoreRaw(ensureWithinLimits(store));
 }
 
-export function createPlanConversation(store: PlanStoreV1): PlanStoreV1 {
+/** New thread is only added with at least the first user turn (no empty sessions in the list). */
+export function createPlanConversation(
+  store: PlanStoreV1,
+  initialMessages: ChatMessage[] = [],
+): PlanStoreV1 {
   const id = crypto.randomUUID();
   const now = Date.now();
   const conv: StoredConversation = {
     id,
-    title: "New plan",
-    messages: [],
+    title: deriveTitle(initialMessages),
+    messages: initialMessages,
     lastAccessedAt: now,
     updatedAt: now,
   };
@@ -238,7 +239,7 @@ export function setActivePlanConversation(store: PlanStoreV1, id: string): PlanS
   });
 }
 
-/** Remove one thread from storage. If none remain, creates a fresh empty plan thread (same as {@link ensureReadyPlanStore}). */
+/** Remove one thread from storage. If none remain, store is empty until the user sends a prompt. */
 export function removePlanConversation(store: PlanStoreV1, conversationId: string): PlanStoreV1 {
   const conversations = store.conversations.filter((c) => c.id !== conversationId);
   let activeConversationId = store.activeConversationId;
@@ -246,19 +247,11 @@ export function removePlanConversation(store: PlanStoreV1, conversationId: strin
     activeConversationId =
       [...conversations].sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0]?.id ?? null;
   }
-  let next: PlanStoreV1 = ensureWithinLimits({
+  return ensureWithinLimits({
     ...store,
     conversations,
     activeConversationId,
   });
-  if (next.conversations.length === 0) {
-    next = createPlanConversation({
-      ...next,
-      conversations: [],
-      activeConversationId: null,
-    });
-  }
-  return next;
 }
 
 export function upsertPlanActiveMessages(store: PlanStoreV1, messages: ChatMessage[]): PlanStoreV1 {

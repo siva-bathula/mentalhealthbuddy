@@ -288,9 +288,8 @@ export function ChatMode({
       let next = prev;
       if (surface === "chat" && interactionMode === "live") {
         next = upsertActiveMessages(prev, messages);
-        persistChatStore(next);
       }
-      next = createConversation(next);
+      next = { ...next, activeConversationId: null };
       persistChatStore(next);
       return next;
     });
@@ -308,20 +307,24 @@ export function ChatMode({
 
     let threadMessages = messages;
     if (surface === "home") {
-      const prev = storeRef.current;
-      const created = createConversation(prev);
+      setSurface("chat");
+      threadMessages = [];
+    }
+
+    const nextUser: ChatMessage[] = [...threadMessages, { role: "user", content: text }];
+    let prev = storeRef.current;
+    if (!prev.activeConversationId) {
+      const created = createConversation(prev, nextUser);
       persistChatStore(created);
       setStore(created);
       storeRef.current = created;
-      setSurface("chat");
-      threadMessages = [];
+      prev = created;
     }
 
     onUserText(text);
     onSeverityFromChat(detectCrisisSignals(text));
     setLastError(null);
     setInput("");
-    const nextUser: ChatMessage[] = [...threadMessages, { role: "user", content: text }];
     setMessages(nextUser);
     setStreaming(true);
     let assistant = "";

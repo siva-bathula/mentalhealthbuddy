@@ -272,9 +272,8 @@ export function ReframeMode({ onUserText, onSeverityFromChat, onDismissCrisisBan
       let next = prev;
       if (surface === "chat" && interactionMode === "live") {
         next = upsertReframeActiveMessages(prev, messages);
-        persistReframeStore(next);
       }
-      next = createReframeConversation(next);
+      next = { ...next, activeConversationId: null };
       persistReframeStore(next);
       return next;
     });
@@ -292,20 +291,24 @@ export function ReframeMode({ onUserText, onSeverityFromChat, onDismissCrisisBan
 
     let threadMessages = messages;
     if (surface === "home") {
-      const prev = storeRef.current;
-      const created = createReframeConversation(prev);
+      setSurface("chat");
+      threadMessages = [];
+    }
+
+    const nextUser: ChatMessage[] = [...threadMessages, { role: "user", content: text }];
+    let prev = storeRef.current;
+    if (!prev.activeConversationId) {
+      const created = createReframeConversation(prev, nextUser);
       persistReframeStore(created);
       setStore(created);
       storeRef.current = created;
-      setSurface("chat");
-      threadMessages = [];
+      prev = created;
     }
 
     onUserText(text);
     onSeverityFromChat(detectCrisisSignals(text));
     setLastError(null);
     setInput("");
-    const nextUser: ChatMessage[] = [...threadMessages, { role: "user", content: text }];
     setMessages(nextUser);
     setStreaming(true);
     let assistant = "";

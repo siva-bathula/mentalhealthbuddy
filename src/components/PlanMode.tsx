@@ -317,9 +317,8 @@ export function PlanMode({
       let next = prev;
       if (surface === "chat" && interactionMode === "live") {
         next = upsertPlanActiveMessages(prev, messages);
-        persistPlanStore(next);
       }
-      next = createPlanConversation(next);
+      next = { ...next, activeConversationId: null };
       persistPlanStore(next);
       return next;
     });
@@ -379,20 +378,24 @@ export function PlanMode({
 
     let threadMessages = messages;
     if (surface === "home") {
-      const prev = storeRef.current;
-      const created = createPlanConversation(prev);
+      setSurface("chat");
+      threadMessages = [];
+    }
+
+    const nextUser: ChatMessage[] = [...threadMessages, { role: "user", content: text }];
+    let prev = storeRef.current;
+    if (!prev.activeConversationId) {
+      const created = createPlanConversation(prev, nextUser);
       persistPlanStore(created);
       setStore(created);
       storeRef.current = created;
-      setSurface("chat");
-      threadMessages = [];
+      prev = created;
     }
 
     onUserText(text);
     onSeverityFromChat(detectCrisisSignals(text));
     setLastError(null);
     setInput("");
-    const nextUser: ChatMessage[] = [...threadMessages, { role: "user", content: text }];
     setMessages(nextUser);
     setStreaming(true);
     let assistant = "";

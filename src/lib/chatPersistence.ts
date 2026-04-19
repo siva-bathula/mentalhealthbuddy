@@ -133,15 +133,10 @@ function migrateLegacyChat(): ChatStoreV1 | null {
   }
 }
 
-/** Load store and guarantee at least one conversation + valid active id when possible. */
+/** Load store and reconcile active id when threads exist (no empty thread is auto-created). */
 export function ensureReadyStore(): ChatStoreV1 {
   let s = loadChatStore();
-  if (s.conversations.length === 0) {
-    s = createConversation(s);
-    persistChatStore(s);
-    return s;
-  }
-  if (!s.activeConversationId) {
+  if (!s.activeConversationId && s.conversations.length > 0) {
     const pick = [...s.conversations].sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0];
     if (pick) {
       s = { ...s, activeConversationId: pick.id };
@@ -162,7 +157,9 @@ export function loadChatStore(): ChatStoreV1 {
     if (!raw) return emptyStore();
     const parsed = JSON.parse(raw) as ChatStoreV1;
     if (parsed?.version !== 1 || !Array.isArray(parsed.conversations)) return emptyStore();
-    const conversations = parsed.conversations.filter(isValidConversation);
+    const conversations = parsed.conversations
+      .filter(isValidConversation)
+      .filter((c) => c.messages.length > 0);
     let activeConversationId = parsed.activeConversationId;
     if (activeConversationId && !conversations.some((c) => c.id === activeConversationId)) {
       activeConversationId = conversations.sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0]?.id ?? null;
@@ -240,13 +237,17 @@ export function persistChatStore(store: ChatStoreV1): void {
   persistChatStoreRaw(ensureWithinLimits(store));
 }
 
-export function createConversation(store: ChatStoreV1): ChatStoreV1 {
+/** New thread is only added with at least the first user turn (no empty sessions in the list). */
+export function createConversation(
+  store: ChatStoreV1,
+  initialMessages: ChatMessage[] = [],
+): ChatStoreV1 {
   const id = crypto.randomUUID();
   const now = Date.now();
   const conv: StoredConversation = {
     id,
-    title: "New conversation",
-    messages: [],
+    title: deriveTitle(initialMessages),
+    messages: initialMessages,
     lastAccessedAt: now,
     updatedAt: now,
   };
@@ -272,7 +273,7 @@ export function setActiveConversation(store: ChatStoreV1, id: string): ChatStore
   });
 }
 
-/** Remove one thread from storage. If none remain, creates a fresh empty conversation (same as {@link ensureReadyStore}). */
+/** Remove one thread from storage. If none remain, store is empty until the user sends a prompt. */
 export function removeConversation(store: ChatStoreV1, conversationId: string): ChatStoreV1 {
   const conversations = store.conversations.filter((c) => c.id !== conversationId);
   let activeConversationId = store.activeConversationId;
@@ -280,19 +281,11 @@ export function removeConversation(store: ChatStoreV1, conversationId: string): 
     activeConversationId =
       [...conversations].sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0]?.id ?? null;
   }
-  let next: ChatStoreV1 = ensureWithinLimits({
+  return ensureWithinLimits({
     ...store,
     conversations,
     activeConversationId,
   });
-  if (next.conversations.length === 0) {
-    next = createConversation({
-      ...next,
-      conversations: [],
-      activeConversationId: null,
-    });
-  }
-  return next;
 }
 
 export function upsertActiveMessages(store: ChatStoreV1, messages: ChatMessage[]): ChatStoreV1 {
