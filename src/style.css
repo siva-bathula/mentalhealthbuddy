@@ -1,0 +1,1210 @@
+:root {
+  color-scheme: light dark;
+  --bg: #0f1419;
+  --surface: #1a2332;
+  --surface2: #243044;
+  --text: #e8eef5;
+  --muted: #9fb0c3;
+  --accent: #6eb5ff;
+  --accent2: #8fd4c1;
+  --danger: #ff8a8a;
+  --warn: #ffd78a;
+  --radius: 12px;
+  --font: "Segoe UI", system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  background: radial-gradient(1200px 600px at 10% -10%, #1e3a5f 0%, transparent 55%),
+    radial-gradient(900px 500px at 90% 0%, #1a3d38 0%, transparent 50%), var(--bg);
+  color: var(--text);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.appShell {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.appHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  margin: 0.25rem 0 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.modeNav {
+  display: flex;
+  gap: 0.35rem;
+  background: var(--surface);
+  padding: 0.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tab,
+.tabActive {
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.tabActive {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btnPrimary,
+.btnSecondary,
+.btnGhost,
+.btnDangerGhost {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 0.55rem 0.9rem;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #5a8fd4, #4a9d8f);
+  color: #071018;
+  font-weight: 600;
+}
+
+.btnSecondary {
+  background: var(--surface2);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--accent);
+  border-color: rgba(110, 181, 255, 0.35);
+}
+
+.btnDangerGhost {
+  background: transparent;
+  color: var(--danger);
+  border-color: rgba(255, 138, 138, 0.35);
+  font-size: 0.9rem;
+}
+
+.chatPanelHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.chatPanelTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex: 1;
+  min-width: min-content;
+}
+
+.chatPanelTitleGroup h2 {
+  margin: 0;
+}
+
+.chatHeaderSpinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chatHeaderSpinnerRing {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(110, 181, 255, 0.22);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: chatHeaderSpin 0.65s linear infinite;
+}
+
+@keyframes chatHeaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chatNewBtn {
+  flex-shrink: 0;
+}
+
+.chatHeadActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.chatSessionsEmpty {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.chatSessionList {
+  margin: 0;
+  padding: 0.35rem 0;
+  list-style: none;
+  max-height: min(40vh, 280px);
+  overflow-y: auto;
+}
+
+.chatSessionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chatSessionRow:first-child {
+  border-top: none;
+}
+
+.chatSessionRowActive {
+  background: rgba(110, 181, 255, 0.08);
+}
+
+.chatSessionMeta {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.chatSessionTitle {
+  font-size: 0.88rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.chatSessionDate {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.chatSessionRowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.chatSessionBtn {
+  padding: 0.35rem 0.55rem;
+  font-size: 0.82rem;
+}
+
+.chatReadonlyBanner {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(143, 212, 193, 0.35);
+  background: rgba(143, 212, 193, 0.1);
+}
+
+.chatReadonlyText {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.chatReadonlyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chatHome {
+  margin: 0 0 1rem;
+  padding: 1rem 1rem 1.1rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 20, 28, 0.35);
+}
+
+.chatHomeLead {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.chatHomeLead strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.chatSessionsOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.25rem;
+  overflow-y: auto;
+  background: rgba(8, 12, 18, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.chatSessionsModal {
+  width: min(100%, 420px);
+  margin-top: min(10vh, 4rem);
+  padding: 1rem 1.1rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+.chatSessionsModalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.chatSessionsModalHead h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.chatSessionsModalClose {
+  flex-shrink: 0;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.chatSessionsFootnote {
+  margin: 0.65rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.chatSessionsModal .chatSessionList {
+  max-height: min(50vh, 320px);
+}
+
+.chatSessionsModal .chatSessionsEmpty {
+  padding: 0.5rem 0 0.75rem;
+}
+
+.mainArea {
+  flex: 1;
+}
+
+.appFooter {
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.appFooter p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Crisis */
+.crisisBanner {
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.crisisUrgent {
+  background: rgba(180, 60, 60, 0.25);
+  border-color: rgba(255, 138, 138, 0.45);
+}
+
+.crisisSoft {
+  background: rgba(200, 150, 60, 0.18);
+  border-color: rgba(255, 215, 138, 0.35);
+}
+
+.crisisHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.crisisHeader h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.crisisList {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  line-height: 1.5;
+}
+
+.crisisEmergency {
+  font-weight: 600;
+  margin: 0.35rem 0;
+  color: #ffe6e6;
+}
+
+.crisisBanner a {
+  color: var(--accent2);
+}
+
+/* Panels */
+.panel {
+  background: rgba(26, 35, 50, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.25rem 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.panelHead h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.panelSub {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.engineBar {
+  margin-bottom: 1rem;
+}
+
+.engineHint {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.engineProgress {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--accent2);
+}
+
+.errorText {
+  color: var(--danger);
+  margin: 0.5rem 0 0;
+}
+
+.chatOptions {
+  margin-bottom: 0.75rem;
+}
+
+.checkLabel {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-size: 0.88rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.messageList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: min(52vh, 480px);
+  overflow-y: auto;
+  padding: 0.25rem 0.25rem 0.5rem;
+}
+
+.emptyChat {
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.bubble {
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bubble.user {
+  align-self: flex-end;
+  background: rgba(90, 143, 212, 0.22);
+}
+
+.bubble.assistant {
+  align-self: flex-start;
+  background: rgba(143, 212, 193, 0.12);
+}
+
+.bubbleLabel {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+
+.bubbleText {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
+.composer textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 4rem;
+  font: inherit;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 20, 25, 0.65);
+  color: var(--text);
+}
+
+.composer textarea:disabled {
+  opacity: 0.55;
+}
+
+.composer .btnPrimary {
+  align-self: flex-end;
+}
+
+/* Assessment */
+.promptBlock {
+  margin: 0 0 1rem;
+  padding: 1rem 1rem 0.85rem;
+  border-left: 4px solid var(--accent);
+  background: rgba(15, 20, 28, 0.5);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.promptMain {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.promptWhy {
+  margin-top: 0.65rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.optionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.55rem;
+}
+
+.optionBtn {
+  font: inherit;
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface2);
+  color: var(--text);
+  cursor: pointer;
+  line-height: 1.35;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.optionBtn:hover {
+  border-color: rgba(110, 181, 255, 0.45);
+  background: #2a3a52;
+}
+
+.summaryReflection {
+  line-height: 1.55;
+  font-size: 1.02rem;
+}
+
+.stepsList {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.2rem;
+  line-height: 1.45;
+}
+
+.finePrint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Disclaimer modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 12, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 40;
+}
+
+.modalCard {
+  max-width: 520px;
+  width: 100%;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem 1.35rem 1.35rem;
+}
+
+.modalCard h1 {
+  margin-top: 0;
+  font-size: 1.35rem;
+}
+
+.modalLead {
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.modalList {
+  margin: 1rem 0;
+  padding-left: 1.2rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.modalCard .btnPrimary {
+  width: 100%;
+}
+
+.appHeaderTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.headerHelpBtn {
+  white-space: nowrap;
+}
+
+.appMainStack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+}
+
+.appMainStackHome .homeLandingStrip {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Landing strip + mood chips */
+.homeLandingStrip {
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(26, 35, 50, 0.55);
+  padding: 1rem 1.1rem;
+}
+
+.homeValueList {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.5;
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.homeValueList strong {
+  color: var(--accent2);
+}
+
+.homeChipSection {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.homeChipLabel {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.homeChipHint {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.homeChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.homeMoodChip {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+  border: 1px solid rgba(143, 212, 193, 0.35);
+  background: rgba(143, 212, 193, 0.08);
+  color: var(--text);
+  padding: 0.38rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.homeMoodChip:hover {
+  border-color: rgba(143, 212, 193, 0.55);
+  background: rgba(143, 212, 193, 0.14);
+}
+
+.homeQuickNav {
+  margin: 0.65rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.linkLike {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.linkLike:hover {
+  color: var(--accent2);
+}
+
+/* Help resources page */
+.helpResourcesPanel .helpResourcesHead {
+  align-items: center;
+}
+
+.helpLead {
+  margin-top: 0;
+}
+
+.helpSection {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.helpSectionTitle {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.helpBullets {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.helpBody {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.helpEmergency {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  color: var(--warn);
+  line-height: 1.45;
+}
+
+.helpResourceList {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.55;
+}
+
+.helpFootnote {
+  margin: 0.75rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* Assessment export + grounding */
+.scopeNote {
+  margin-top: 0;
+}
+
+.assessmentExportRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+
+.copyHint {
+  font-size: 0.85rem;
+  color: var(--accent2);
+}
+
+.groundingCard {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(143, 212, 193, 0.2);
+  background: rgba(36, 48, 68, 0.45);
+}
+
+.groundingTitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.98rem;
+}
+
+.groundingIntro {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.groundingPhase {
+  font-size: 0.95rem;
+  margin-bottom: 0.65rem;
+  min-height: 1.35em;
+}
+
+.groundingBar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.groundingBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(110, 181, 255, 0.35), rgba(143, 212, 193, 0.55));
+  transition: width 0.35s ease;
+}
+
+.groundingActions {
+  margin-top: 0.75rem;
+}
+
+.chatCostEstimate {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 550;
+  color: var(--muted);
+}
+
+.chatScopeNote {
+  margin: -0.35rem 0 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chatHeaderSpinnerRing {
+    animation: none;
+    border-top-color: var(--accent);
+    opacity: 0.88;
+  }
+
+  .groundingBarFill {
+    transition: none;
+  }
+
+  .boxBreathingEdge.active {
+    animation: none;
+    opacity: 1;
+    filter: brightness(1.15);
+  }
+}
+
+/* Micro-interventions modal (Calm now) */
+.microModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 12, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 50;
+}
+
+.microModal {
+  max-width: 440px;
+  width: 100%;
+  max-height: min(90vh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.15rem 1.2rem 1.2rem;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  outline: none;
+}
+
+.microModalHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.microModalHead h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.microModalLead {
+  margin: 0 0 0.85rem;
+  line-height: 1.5;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.microModalSub {
+  margin: 0 0 0.75rem;
+  line-height: 1.45;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.microPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.microPickerBtn {
+  width: 100%;
+  text-align: center;
+}
+
+.microModalActions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.5rem;
+}
+
+.boxBreathingRoot {
+  padding-top: 0.15rem;
+}
+
+.boxBreathingLead {
+  margin: 0 0 1rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.boxBreathingHud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.boxBreathingPhase {
+  font-weight: 650;
+  color: var(--accent2);
+  min-width: 4.5rem;
+}
+
+.boxBreathingCount {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.boxBreathingMeta {
+  font-size: 0.82rem;
+  color: var(--muted);
+  width: 100%;
+}
+
+.boxBreathingReducedNote {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.boxBreathingSquare {
+  position: relative;
+  width: min(220px, 70vw);
+  aspect-ratio: 1;
+  margin: 0 auto 0.25rem;
+}
+
+.boxBreathingSquareInner {
+  position: absolute;
+  inset: 18%;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(36, 48, 68, 0.35);
+}
+
+.boxBreathingEdge {
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(110, 181, 255, 0.22);
+  opacity: 0.45;
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+.boxBreathingEdge.active {
+  opacity: 1;
+  background: linear-gradient(90deg, rgba(110, 181, 255, 0.55), rgba(143, 212, 193, 0.65));
+  animation: boxEdgePulse 4s linear infinite;
+}
+
+@keyframes boxEdgePulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.18);
+  }
+}
+
+.boxBreathingEdgeTop {
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 6px;
+}
+
+.boxBreathingEdgeRight {
+  top: 12%;
+  right: 0;
+  bottom: 12%;
+  width: 6px;
+}
+
+.boxBreathingEdgeBottom {
+  bottom: 0;
+  left: 12%;
+  right: 12%;
+  height: 6px;
+}
+
+.boxBreathingEdgeLeft {
+  top: 12%;
+  left: 0;
+  bottom: 12%;
+  width: 6px;
+}
+
+.groundingPanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.groundingPanel > .btnPrimary:first-of-type {
+  align-self: flex-start;
+}
+
+.microTriageLabel {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.microTriageInput {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0.65rem;
+  resize: vertical;
+  min-height: 2.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(12, 18, 28, 0.55);
+  color: var(--text);
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+}
+
+.microTriageInput:focus {
+  outline: 2px solid rgba(110, 181, 255, 0.45);
+  outline-offset: 1px;
+}
+
+.microMessageList {
+  flex: 1;
+  min-height: 120px;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0.5rem 0 0.65rem;
+  padding-right: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.microMessageList .bubble {
+  max-width: 100%;
+}
+
+.microComposer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.microComposer textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 3.25rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(12, 18, 28, 0.55);
+  color: var(--text);
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+}
+
+.microComposer textarea:focus {
+  outline: 2px solid rgba(110, 181, 255, 0.45);
+  outline-offset: 1px;
+}
+
+.microComposer textarea:disabled {
+  opacity: 0.65;
+}
+
+.microBackBtn {
+  margin-top: 0.65rem;
+  align-self: flex-start;
+}
+
+@media (max-width: 640px) {
+  .appHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .appHeaderTools {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .modeNav {
+    align-self: stretch;
+    justify-content: stretch;
+  }
+
+  .tab,
+  .tabActive {
+    flex: 1;
+    text-align: center;
+  }
+
+  .headerActions {
+    justify-content: stretch;
+  }
+
+  .headerActions button {
+    flex: 1;
+  }
+}
