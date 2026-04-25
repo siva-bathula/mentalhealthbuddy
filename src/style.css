@@ -984,6 +984,33 @@ body {
   padding-top: 0.15rem;
 }
 
+.boxBreathingFieldLabel {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.boxBreathingStartRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.boxBreathingNumberInput {
+  width: 4.5rem;
+  box-sizing: border-box;
+  padding: 0.45rem 0.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(12, 18, 28, 0.55);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .boxBreathingLead {
   margin: 0 0 1rem;
   line-height: 1.5;
@@ -1049,7 +1076,10 @@ body {
 .boxBreathingEdge.active {
   opacity: 1;
   background: linear-gradient(90deg, rgba(110, 181, 255, 0.55), rgba(143, 212, 193, 0.65));
-  animation: boxEdgePulse 4s linear infinite;
+  animation-name: boxEdgePulse;
+  animation-duration: var(--box-phase-seconds, 4s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 @keyframes boxEdgePulse {

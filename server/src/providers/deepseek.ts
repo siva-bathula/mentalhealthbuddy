@@ -23,6 +23,12 @@ export async function* streamDeepSeek(
     ],
     stream_options: { include_usage: true },
   };
+  if (env.DEEPSEEK_THINKING === "enabled") {
+    body.reasoning_effort = env.DEEPSEEK_REASONING_EFFORT;
+    body.thinking = { type: "enabled" as const };
+  } else {
+    body.thinking = { type: "disabled" as const };
+  }
 
   const res = await fetch(url, {
     method: "POST",
@@ -61,11 +67,15 @@ export async function* streamDeepSeek(
         const jsonStr = trimmed.slice(6);
         try {
           const chunk = JSON.parse(jsonStr) as {
-            choices?: Array<{ delta?: { content?: string } }>;
+            choices?: Array<{
+              delta?: { content?: string; reasoning_content?: string };
+            }>;
             usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
           };
-          const piece = chunk.choices?.[0]?.delta?.content;
+          const delta = chunk.choices?.[0]?.delta;
+          const piece = delta?.content;
           if (piece) yield { kind: "delta", text: piece };
+          // In thinking mode, `reasoning_content` also streams; we only forward `content` to the UI.
           if (chunk.usage) {
             lastNormalized = normalizeDeepSeekUsage(chunk.usage) ?? lastNormalized;
           }

@@ -21,6 +21,13 @@ export type Env = {
   DEEPSEEK_API_KEY: string | undefined;
   DEEPSEEK_BASE_URL: string;
   DEEPSEEK_MODEL: string;
+  /**
+   * DeepSeek V3.2+ / V4 "thinking" chain-of-thought. When enabled, request includes
+   * `reasoning_effort` and `thinking: { type: "enabled" }` (see API thinking mode guide).
+   */
+  DEEPSEEK_THINKING: "enabled" | "disabled";
+  /** e.g. high, max; low/medium are mapped to high and xhigh to max by the API. */
+  DEEPSEEK_REASONING_EFFORT: string;
   /** Optional USD per 1M input tokens (for estimated cost logs / SSE). */
   DEEPSEEK_INPUT_USD_PER_1M: number | undefined;
   DEEPSEEK_OUTPUT_USD_PER_1M: number | undefined;
@@ -68,8 +75,17 @@ export function loadEnv(): Env {
 
   const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY?.trim();
   const DEEPSEEK_BASE_URL =
-    process.env.DEEPSEEK_BASE_URL?.trim() ?? "https://api.deepseek.com/v1";
-  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL?.trim() ?? "deepseek-chat";
+    process.env.DEEPSEEK_BASE_URL?.trim() ?? "https://api.deepseek.com/";
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL?.trim() ?? "deepseek-v4-pro";
+
+  const thinkingRaw = (process.env.DEEPSEEK_THINKING ?? "enabled").trim().toLowerCase();
+  const DEEPSEEK_THINKING: "enabled" | "disabled" =
+    thinkingRaw === "disabled" || thinkingRaw === "0" || thinkingRaw === "false"
+      ? "disabled"
+      : "enabled";
+  const effortRaw = (process.env.DEEPSEEK_REASONING_EFFORT ?? "high").trim().toLowerCase();
+  const allowedEffort = new Set(["low", "medium", "high", "max", "xhigh"]);
+  const DEEPSEEK_REASONING_EFFORT = allowedEffort.has(effortRaw) ? effortRaw : "high";
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim();
   const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() ?? "gemini-2.5-flash";
@@ -117,6 +133,8 @@ export function loadEnv(): Env {
     DEEPSEEK_API_KEY,
     DEEPSEEK_BASE_URL,
     DEEPSEEK_MODEL,
+    DEEPSEEK_THINKING,
+    DEEPSEEK_REASONING_EFFORT,
     DEEPSEEK_INPUT_USD_PER_1M,
     DEEPSEEK_OUTPUT_USD_PER_1M,
     GEMINI_API_KEY,
