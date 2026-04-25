@@ -6,13 +6,18 @@ import os from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { loadEnv, providerConfigError } from "./env.js";
+import {
+  getActiveProvider,
+  initProviderFailover,
+  markProviderFailure,
+  markProviderSuccess,
+  streamLlm,
+} from "./providerFailover.js";
 import { getRepoRoot } from "./paths.js";
 import { prefilterLastUserMessage } from "./prefilter.js";
 import type { ChatStreamYield } from "./chatStreamTypes.js";
 import type { NormalizedUsage } from "./tokenUsage.js";
-import { streamDeepSeek } from "./providers/deepseek.js";
 import type { ChatTurn } from "./providers/deepseek.js";
-import { streamGemini } from "./providers/gemini.js";
 import helmet from "@fastify/helmet";
 import { initRateLimit, rateLimitAllow } from "./rateLimit.js";
 import { refreshUsdInrAtStartup, usdCostToInr, usdToInrRate } from "./fxUsdInr.js";
@@ -24,6 +29,7 @@ import { registerStaticSpa } from "./staticSpa.js";
 import { sseData, sseDone } from "./sse.js";
 
 const env = loadEnv();
+initProviderFailover(env);
 
 initRateLimit({
   windowMs: env.rateLimitWindowMs,
@@ -109,11 +115,13 @@ function sanitizeConversationId(raw: unknown): string | undefined {
 function sseReadable(
   gen: AsyncGenerator<ChatStreamYield, void, unknown>,
   opts: {
-    log: { info: (obj: Record<string, unknown>) => void };
+    log: { info: (obj: Record<string, unknown>) => void; warn: (obj: Record<string, unknown>) => void };
     conversationId?: string;
     provider: string;
     /** Log event name for structured logs (default chat_stream_usage). */
     usageMsg?: string;
+    onStreamSuccess?: () => void;
+    onStreamFailure?: () => void;
   },
 ): Readable {
   return Readable.from(
@@ -141,8 +149,10 @@ function sseReadable(
             costInr,
           });
         }
+        opts.onStreamSuccess?.();
         yield sseDone();
       } catch (e) {
+        opts.onStreamFailure?.();
         yield sseData({
           error: e instanceof Error ? e.message : "Upstream model error",
         });
@@ -204,13 +214,12 @@ app.post("/api/chat", async (req, reply) => {
   const thread: ChatTurn[] = messages;
 
   if (!wantStream) {
+    const provider = getActiveProvider();
     try {
       let full = "";
       let usageMeta: NormalizedUsage | undefined;
       let costUsd: number | null | undefined;
-      const provider = env.CHAT_PROVIDER;
-      const iter =
-        provider === "deepseek" ? streamDeepSeek(env, thread) : streamGemini(env, thread);
+      const iter = streamLlm(env, provider, thread);
       for await (const y of iter) {
         if (y.kind === "delta") full += y.text;
         else {
@@ -218,6 +227,7 @@ app.post("/api/chat", async (req, reply) => {
           costUsd = y.costUsd;
         }
       }
+      markProviderSuccess();
       const costInr = usdCostToInr(costUsd ?? null);
       if (usageMeta) {
         req.log.info({
@@ -238,6 +248,7 @@ app.post("/api/chat", async (req, reply) => {
         costInr,
       };
     } catch (e) {
+      markProviderFailure(env, req.log);
       req.log.error(e);
       reply.code(502);
       return {
@@ -246,16 +257,18 @@ app.post("/api/chat", async (req, reply) => {
     }
   }
 
+  const streamProvider = getActiveProvider();
   async function* streamChat(): AsyncGenerator<ChatStreamYield, void, unknown> {
-    if (env.CHAT_PROVIDER === "deepseek") yield* streamDeepSeek(env, thread);
-    else yield* streamGemini(env, thread);
+    yield* streamLlm(env, streamProvider, thread);
   }
 
   return reply.type("text/event-stream").send(
     sseReadable(streamChat(), {
       log: req.log,
       conversationId,
-      provider: env.CHAT_PROVIDER,
+      provider: streamProvider,
+      onStreamSuccess: markProviderSuccess,
+      onStreamFailure: () => markProviderFailure(env, req.log),
     }),
   );
 });
@@ -306,15 +319,12 @@ app.post("/api/plan", async (req, reply) => {
   const thread: ChatTurn[] = messages;
 
   if (!wantStream) {
+    const provider = getActiveProvider();
     try {
       let full = "";
       let usageMeta: NormalizedUsage | undefined;
       let costUsd: number | null | undefined;
-      const provider = env.CHAT_PROVIDER;
-      const iter =
-        provider === "deepseek"
-          ? streamDeepSeek(env, thread, PLAN_SYSTEM_PROMPT)
-          : streamGemini(env, thread, PLAN_SYSTEM_PROMPT);
+      const iter = streamLlm(env, provider, thread, PLAN_SYSTEM_PROMPT);
       for await (const y of iter) {
         if (y.kind === "delta") full += y.text;
         else {
@@ -322,6 +332,7 @@ app.post("/api/plan", async (req, reply) => {
           costUsd = y.costUsd;
         }
       }
+      markProviderSuccess();
       const costInr = usdCostToInr(costUsd ?? null);
       if (usageMeta) {
         req.log.info({
@@ -342,6 +353,7 @@ app.post("/api/plan", async (req, reply) => {
         costInr,
       };
     } catch (e) {
+      markProviderFailure(env, req.log);
       req.log.error(e);
       reply.code(502);
       return {
@@ -350,17 +362,19 @@ app.post("/api/plan", async (req, reply) => {
     }
   }
 
+  const streamProviderPlan = getActiveProvider();
   async function* streamPlan(): AsyncGenerator<ChatStreamYield, void, unknown> {
-    if (env.CHAT_PROVIDER === "deepseek") yield* streamDeepSeek(env, thread, PLAN_SYSTEM_PROMPT);
-    else yield* streamGemini(env, thread, PLAN_SYSTEM_PROMPT);
+    yield* streamLlm(env, streamProviderPlan, thread, PLAN_SYSTEM_PROMPT);
   }
 
   return reply.type("text/event-stream").send(
     sseReadable(streamPlan(), {
       log: req.log,
       conversationId,
-      provider: env.CHAT_PROVIDER,
+      provider: streamProviderPlan,
       usageMsg: "plan_stream_usage",
+      onStreamSuccess: markProviderSuccess,
+      onStreamFailure: () => markProviderFailure(env, req.log),
     }),
   );
 });
@@ -411,15 +425,12 @@ app.post("/api/reframe", async (req, reply) => {
   const thread: ChatTurn[] = messages;
 
   if (!wantStream) {
+    const provider = getActiveProvider();
     try {
       let full = "";
       let usageMeta: NormalizedUsage | undefined;
       let costUsd: number | null | undefined;
-      const provider = env.CHAT_PROVIDER;
-      const iter =
-        provider === "deepseek"
-          ? streamDeepSeek(env, thread, REFRAME_SYSTEM_PROMPT)
-          : streamGemini(env, thread, REFRAME_SYSTEM_PROMPT);
+      const iter = streamLlm(env, provider, thread, REFRAME_SYSTEM_PROMPT);
       for await (const y of iter) {
         if (y.kind === "delta") full += y.text;
         else {
@@ -427,6 +438,7 @@ app.post("/api/reframe", async (req, reply) => {
           costUsd = y.costUsd;
         }
       }
+      markProviderSuccess();
       const costInr = usdCostToInr(costUsd ?? null);
       if (usageMeta) {
         req.log.info({
@@ -447,6 +459,7 @@ app.post("/api/reframe", async (req, reply) => {
         costInr,
       };
     } catch (e) {
+      markProviderFailure(env, req.log);
       req.log.error(e);
       reply.code(502);
       return {
@@ -455,17 +468,19 @@ app.post("/api/reframe", async (req, reply) => {
     }
   }
 
+  const streamProviderReframe = getActiveProvider();
   async function* streamReframe(): AsyncGenerator<ChatStreamYield, void, unknown> {
-    if (env.CHAT_PROVIDER === "deepseek") yield* streamDeepSeek(env, thread, REFRAME_SYSTEM_PROMPT);
-    else yield* streamGemini(env, thread, REFRAME_SYSTEM_PROMPT);
+    yield* streamLlm(env, streamProviderReframe, thread, REFRAME_SYSTEM_PROMPT);
   }
 
   return reply.type("text/event-stream").send(
     sseReadable(streamReframe(), {
       log: req.log,
       conversationId,
-      provider: env.CHAT_PROVIDER,
+      provider: streamProviderReframe,
       usageMsg: "reframe_stream_usage",
+      onStreamSuccess: markProviderSuccess,
+      onStreamFailure: () => markProviderFailure(env, req.log),
     }),
   );
 });
@@ -516,15 +531,12 @@ app.post("/api/ground", async (req, reply) => {
   const thread: ChatTurn[] = messages;
 
   if (!wantStream) {
+    const provider = getActiveProvider();
     try {
       let full = "";
       let usageMeta: NormalizedUsage | undefined;
       let costUsd: number | null | undefined;
-      const provider = env.CHAT_PROVIDER;
-      const iter =
-        provider === "deepseek"
-          ? streamDeepSeek(env, thread, GROUNDING_SYSTEM_PROMPT)
-          : streamGemini(env, thread, GROUNDING_SYSTEM_PROMPT);
+      const iter = streamLlm(env, provider, thread, GROUNDING_SYSTEM_PROMPT);
       for await (const y of iter) {
         if (y.kind === "delta") full += y.text;
         else {
@@ -532,6 +544,7 @@ app.post("/api/ground", async (req, reply) => {
           costUsd = y.costUsd;
         }
       }
+      markProviderSuccess();
       const costInr = usdCostToInr(costUsd ?? null);
       if (usageMeta) {
         req.log.info({
@@ -552,6 +565,7 @@ app.post("/api/ground", async (req, reply) => {
         costInr,
       };
     } catch (e) {
+      markProviderFailure(env, req.log);
       req.log.error(e);
       reply.code(502);
       return {
@@ -560,17 +574,19 @@ app.post("/api/ground", async (req, reply) => {
     }
   }
 
+  const streamProviderGround = getActiveProvider();
   async function* streamGround(): AsyncGenerator<ChatStreamYield, void, unknown> {
-    if (env.CHAT_PROVIDER === "deepseek") yield* streamDeepSeek(env, thread, GROUNDING_SYSTEM_PROMPT);
-    else yield* streamGemini(env, thread, GROUNDING_SYSTEM_PROMPT);
+    yield* streamLlm(env, streamProviderGround, thread, GROUNDING_SYSTEM_PROMPT);
   }
 
   return reply.type("text/event-stream").send(
     sseReadable(streamGround(), {
       log: req.log,
       conversationId,
-      provider: env.CHAT_PROVIDER,
+      provider: streamProviderGround,
       usageMsg: "ground_stream_usage",
+      onStreamSuccess: markProviderSuccess,
+      onStreamFailure: () => markProviderFailure(env, req.log),
     }),
   );
 });
