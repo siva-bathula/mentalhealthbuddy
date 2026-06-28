@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { streamBackendPlan } from "../lib/backendPlan";
+import { SessionInsightCard } from "./SessionInsightCard";
 import {
   accumulatePlanLlmUsage,
   createPlanConversation,
@@ -613,6 +614,10 @@ export function PlanMode({
           ))}
           <div ref={bottomRef} />
         </div>
+      )}
+
+      {surface === "chat" && !streaming && messages.length >= 2 && (
+        <SessionInsightCard messages={messages} />
       )}
 
       <div className="composer">

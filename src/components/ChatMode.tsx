@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { streamBackendChat } from "../lib/backendChat";
+import { SessionInsightCard } from "./SessionInsightCard";
 import {
   accumulateLlmUsage,
   createConversation,
@@ -502,6 +503,25 @@ export function ChatMode({
             Welcome. Start a new chat, open <strong>Sessions</strong> to continue or review saved
             threads, or type below to begin a fresh conversation.
           </p>
+          <div className="starterChips" role="group" aria-label="Conversation starters">
+            {[
+              "I'm feeling anxious and can't stop worrying",
+              "I've been feeling low and unmotivated lately",
+              "I can't sleep — my mind keeps racing",
+              "I had a really hard day",
+              "I'm overwhelmed with everything on my plate",
+              "I feel lonely and disconnected",
+            ].map((starter) => (
+              <button
+                key={starter}
+                type="button"
+                className="starterChip"
+                onClick={() => setInput(starter)}
+              >
+                {starter}
+              </button>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="messageList" role="log" aria-live="polite">
@@ -516,6 +536,10 @@ export function ChatMode({
           ))}
           <div ref={bottomRef} />
         </div>
+      )}
+
+      {surface === "chat" && !streaming && messages.length >= 2 && (
+        <SessionInsightCard messages={messages} />
       )}
 
       <div className="composer">

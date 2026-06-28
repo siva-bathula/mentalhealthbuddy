@@ -25,6 +25,8 @@ import { buildPlanExportDoc } from "./planExportDoc.js";
 import { PLAN_SYSTEM_PROMPT } from "./planSystemPrompt.js";
 import { REFRAME_SYSTEM_PROMPT } from "./reframeSystemPrompt.js";
 import { GROUNDING_SYSTEM_PROMPT } from "./groundingSystemPrompt.js";
+import { SUMMARISE_SYSTEM_PROMPT } from "./summariseSystemPrompt.js";
+import { JOURNAL_SYSTEM_PROMPT } from "./journalSystemPrompt.js";
 import { registerStaticSpa } from "./staticSpa.js";
 import { sseData, sseDone } from "./sse.js";
 
@@ -585,6 +587,104 @@ app.post("/api/ground", async (req, reply) => {
       conversationId,
       provider: streamProviderGround,
       usageMsg: "ground_stream_usage",
+      onStreamSuccess: markProviderSuccess,
+      onStreamFailure: () => markProviderFailure(env, req.log),
+    }),
+  );
+});
+
+app.post("/api/summarise", async (req, reply) => {
+  const ip = clientIp(req);
+  if (!rateLimitAllow(ip)) {
+    reply.code(429);
+    return { error: "Too many requests. Try again in a minute." };
+  }
+
+  const cfgErr = providerConfigError(env);
+  if (cfgErr) {
+    reply.code(503);
+    return { error: cfgErr };
+  }
+
+  const body = req.body as ChatBody;
+  const messages = normalizeMessages(body);
+  if (!messages || messages.length < 2) {
+    reply.code(400);
+    return { error: "Expected at least 2 messages to summarise." };
+  }
+
+  const provider = getActiveProvider();
+  try {
+    let full = "";
+    const iter = streamLlm(env, provider, messages, SUMMARISE_SYSTEM_PROMPT);
+    for await (const y of iter) {
+      if (y.kind === "delta") full += y.text;
+    }
+    markProviderSuccess();
+    let bullets: string[] = [];
+    try {
+      const parsed = JSON.parse(full) as { bullets?: unknown };
+      if (Array.isArray(parsed.bullets)) {
+        bullets = parsed.bullets.filter((b): b is string => typeof b === "string");
+      }
+    } catch {
+      // fallback: split on newlines
+      bullets = full.split("\n").map((l) => l.replace(/^[-•*]\s*/, "").trim()).filter(Boolean);
+    }
+    return { bullets };
+  } catch (e) {
+    markProviderFailure(env, req.log);
+    req.log.error(e);
+    reply.code(502);
+    return { error: e instanceof Error ? e.message : "Upstream model error" };
+  }
+});
+
+app.post("/api/journal", async (req, reply) => {
+  const ip = clientIp(req);
+  if (!rateLimitAllow(ip)) {
+    reply.code(429);
+    return { error: "Too many requests. Try again in a minute." };
+  }
+
+  const body = req.body as ChatBody;
+  const conversationId = sanitizeConversationId(body.conversationId);
+  const cfgErr = providerConfigError(env);
+  if (cfgErr) {
+    const stream = Readable.from([sseData({ error: cfgErr }), sseDone()]);
+    return reply.type("text/event-stream").send(stream);
+  }
+
+  const messages = normalizeMessages(body);
+  if (!messages) {
+    reply.code(400);
+    return { error: "Expected { messages: [{ role, content }] } with user/assistant turns." };
+  }
+
+  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+  if (!lastUser) {
+    reply.code(400);
+    return { error: "At least one user message is required." };
+  }
+
+  const gate = prefilterLastUserMessage(lastUser.content);
+  if (gate.action === "block") {
+    const stream = Readable.from([sseData({ delta: gate.response }), sseDone()]);
+    return reply.type("text/event-stream").send(stream);
+  }
+
+  const thread: ChatTurn[] = messages;
+  const streamProviderJournal = getActiveProvider();
+  async function* streamJournal(): AsyncGenerator<ChatStreamYield, void, unknown> {
+    yield* streamLlm(env, streamProviderJournal, thread, JOURNAL_SYSTEM_PROMPT);
+  }
+
+  return reply.type("text/event-stream").send(
+    sseReadable(streamJournal(), {
+      log: req.log,
+      conversationId,
+      provider: streamProviderJournal,
+      usageMsg: "journal_stream_usage",
       onStreamSuccess: markProviderSuccess,
       onStreamFailure: () => markProviderFailure(env, req.log),
     }),

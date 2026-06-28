@@ -1207,6 +1207,299 @@ body {
   align-self: flex-start;
 }
 
+/* ── Mood Check-in ─────────────────────────────────────────── */
+
+.moodCheckIn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.moodCheckInHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.moodCheckInTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.moodEmojiRow {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.moodEmojiBtn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  font-size: 1.6rem;
+  line-height: 1;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s;
+  color: inherit;
+}
+
+.moodEmojiBtn:hover {
+  background: rgba(110, 181, 255, 0.15);
+  border-color: rgba(110, 181, 255, 0.4);
+  transform: scale(1.12);
+}
+
+.moodEmojiBtn[aria-pressed="true"] {
+  background: rgba(110, 181, 255, 0.2);
+  border-color: var(--accent);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px rgba(110, 181, 255, 0.3);
+}
+
+.streakChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 215, 138, 0.12);
+  border: 1px solid rgba(255, 215, 138, 0.3);
+  color: var(--warn);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  white-space: nowrap;
+}
+
+.moodLoggedNote {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.moodCheckInHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.moodHistoryToggle {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.55rem;
+}
+
+/* ── Mood History Chart ────────────────────────────────────── */
+
+.moodChart {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.moodChartLabel {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.moodChartBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 64px;
+}
+
+.moodChartCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+.moodChartBarWrap {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.moodChartBar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+  transition: height 0.25s ease;
+}
+
+.moodChartDayLabel {
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1;
+  min-height: 0.7rem;
+}
+
+.moodChartLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.6rem;
+}
+
+.moodChartLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.moodChartLegendDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── End Mood Check-in ─────────────────────────────────────── */
+
+/* ── Session Insight Card ─────────────────────────────────── */
+
+.sessionInsightCard {
+  margin: 0.5rem 0;
+}
+
+.sessionInsightBtn {
+  font-size: 0.82rem;
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.sessionInsightBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.sessionInsightLoading {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0.25rem 0;
+}
+
+.sessionInsightError {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sessionInsightResult {
+  background: rgba(110, 181, 255, 0.06);
+  border: 1px solid rgba(110, 181, 255, 0.2);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+}
+
+.sessionInsightHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.sessionInsightTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sessionInsightClose {
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  line-height: 1;
+}
+
+.sessionInsightBullets {
+  margin: 0 0 0.6rem;
+  padding-left: 1.2rem;
+}
+
+.sessionInsightBullets li {
+  font-size: 0.88rem;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+  line-height: 1.45;
+}
+
+.sessionInsightActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.sessionInsightDisclaimer {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ── Journal Mode ─────────────────────────────────────────── */
+
+.journalPanel .composer textarea {
+  min-height: 5rem;
+}
+
+.journalHome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Conversation Starter Chips ───────────────────────────── */
+
+.starterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.starterChip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  padding: 0.3rem 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  text-align: left;
+}
+
+.starterChip:hover {
+  background: rgba(110, 181, 255, 0.1);
+  border-color: rgba(110, 181, 255, 0.35);
+  color: var(--text);
+}
+
 @media (max-width: 640px) {
   .appHeader {
     flex-direction: column;

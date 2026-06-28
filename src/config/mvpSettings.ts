@@ -17,5 +17,9 @@ export const STORAGE_KEYS = {
   reframeStore: "mhb_reframe_store_v1",
   /** Last downloaded export file per plan session (device-local). */
   planExportCache: "mhb_plan_export_cache_v1",
+  /** Daily mood check-in log (MoodStore). */
+  moodStore: "mhb_mood_store_v1",
+  /** Journal entries (JournalStore). */
+  journalStore: "mhb_journal_store_v1",
   /** Legacy keys removed from active use: mhb_chat_messages_v1, mhb_chat_persist_v1, mhb_region_pref_v1 */
 } as const;

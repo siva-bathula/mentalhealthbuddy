@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { streamBackendReframe } from "../lib/backendReframe";
+import { SessionInsightCard } from "./SessionInsightCard";
 import {
   accumulateReframeLlmUsage,
   createReframeConversation,
@@ -502,6 +503,10 @@ export function ReframeMode({ onUserText, onSeverityFromChat, onDismissCrisisBan
           ))}
           <div ref={bottomRef} />
         </div>
+      )}
+
+      {surface === "chat" && !streaming && messages.length >= 2 && (
+        <SessionInsightCard messages={messages} />
       )}
 
       <div className="composer">

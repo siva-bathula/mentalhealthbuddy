@@ -1,3 +1,5 @@
+import { MoodCheckIn } from "./MoodCheckIn";
+
 type Props = {
   onOpenHelp: () => void;
 };
@@ -9,6 +11,8 @@ export function HomeLandingStrip({ onOpenHelp }: Props) {
       <h2 id="home-landing-heading" className="srOnly">
         What you can do here
       </h2>
+
+      <MoodCheckIn />
       <ul className="homeValueList">
         <li>
           <strong>Chat</strong> — Talk things through with a supportive companion (general wellness
@@ -25,6 +29,14 @@ export function HomeLandingStrip({ onOpenHelp }: Props) {
         <li>
           <strong>Stress relief</strong> — Brief techniques suggested by the guided coach (plus an optional
           box-breathing timer) from <strong>Calm now</strong> in the header (short exercises; not emergency care).
+        </li>
+        <li>
+          <strong>Journal</strong> — Free-write anything on your mind; the AI reflects back and
+          asks one gentle follow-up question (private to your browser).
+        </li>
+        <li>
+          <strong>Assessment</strong> — Short branching self-reflection to understand what's most
+          present for you right now (educational only; not a diagnosis).
         </li>
         <li>
           <strong>Help</strong> — India crisis lines and when to seek emergency care —{" "}

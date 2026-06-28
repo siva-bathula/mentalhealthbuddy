@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
+import { AssessmentMode } from "./components/AssessmentMode";
 import { ChatMode } from "./components/ChatMode";
 import { CrisisBanner } from "./components/CrisisBanner";
 import { DisclaimerGate } from "./components/DisclaimerGate";
 import { HelpResources } from "./components/HelpResources";
 import { HomeLandingStrip } from "./components/HomeLandingStrip";
+import { JournalMode } from "./components/JournalMode";
 import { PlanMode } from "./components/PlanMode";
 import { ReframeMode } from "./components/ReframeMode";
 import { MicroInterventionsModal } from "./components/MicroInterventionsModal";
@@ -11,7 +13,7 @@ import type { CrisisSeverity } from "./lib/crisisSignals";
 import { mergeSeverity } from "./lib/crisisSignals";
 import './firebase';
 
-type Mode = "chat" | "plan" | "reframe";
+type Mode = "chat" | "plan" | "reframe" | "assessment" | "journal";
 type AppScreen = "app" | "help";
 type ShellView = "home" | "workspace";
 
@@ -39,6 +41,16 @@ export default function App() {
             {shellView === "workspace" && mode === "reframe" && screen === "app" && (
               <p className="tagline">
                 Cognitive reframing — evidence for and against a stuck thought, then a balanced view.
+              </p>
+            )}
+            {shellView === "workspace" && mode === "assessment" && screen === "app" && (
+              <p className="tagline">
+                Short self-reflection walkthrough — not a diagnosis. Answers stay in your browser.
+              </p>
+            )}
+            {shellView === "workspace" && mode === "journal" && screen === "app" && (
+              <p className="tagline">
+                Free-write journal — the AI reflects back and asks one gentle follow-up question.
               </p>
             )}
           </div>
@@ -105,6 +117,38 @@ export default function App() {
               >
                 Thought challenger
               </button>
+              <button
+                type="button"
+                className={
+                  shellView === "workspace" && mode === "journal" && screen === "app"
+                    ? "tabActive"
+                    : "tab"
+                }
+                onClick={() => {
+                  setScreen("app");
+                  setShellView("workspace");
+                  setCrisisSeverity("none");
+                  setMode("journal");
+                }}
+              >
+                Journal
+              </button>
+              <button
+                type="button"
+                className={
+                  shellView === "workspace" && mode === "assessment" && screen === "app"
+                    ? "tabActive"
+                    : "tab"
+                }
+                onClick={() => {
+                  setScreen("app");
+                  setShellView("workspace");
+                  setCrisisSeverity("none");
+                  setMode("assessment");
+                }}
+              >
+                Assessment
+              </button>
             </nav>
             {shellView === "home" && screen === "app" && (
               <button type="button" className="btnGhost headerHelpBtn" onClick={() => setScreen("help")}>
@@ -136,6 +180,16 @@ export default function App() {
                   onUserText={() => {}}
                   onSeverityFromChat={bumpCrisis}
                   onDismissCrisisBanner={() => setCrisisSeverity("none")}
+                />
+              ) : mode === "journal" ? (
+                <JournalMode
+                  onSeverityFromJournal={bumpCrisis}
+                  onDismissCrisisBanner={() => setCrisisSeverity("none")}
+                />
+              ) : mode === "assessment" ? (
+                <AssessmentMode
+                  onAnswerText={() => {}}
+                  onSeverityFromAssessment={bumpCrisis}
                 />
               ) : (
                 <ReframeMode
