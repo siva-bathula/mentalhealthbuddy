@@ -30,6 +30,19 @@ export function JournalMode({ onSeverityFromJournal, onDismissCrisisBanner }: Pr
   const bottomRef = useRef<HTMLDivElement>(null);
   const storeRef = useRef(store);
   storeRef.current = store;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+
+  useEffect(() => {
+    return () => {
+      const s = storeRef.current;
+      const msgs = messagesRef.current;
+      if (s.activeEntryId && msgs.length > 0) {
+        const next = upsertActiveJournalMessages(s, msgs);
+        persistJournalStore(next);
+      }
+    };
+  }, []);
 
   const sortedEntries = useMemo(
     () => [...store.entries].sort((a, b) => b.updatedAt - a.updatedAt),

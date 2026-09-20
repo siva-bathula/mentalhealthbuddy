@@ -49,8 +49,21 @@ export function ReframeMode({ onUserText, onSeverityFromChat, onDismissCrisisBan
   const bottomRef = useRef<HTMLDivElement>(null);
   const storeRef = useRef(store);
   storeRef.current = store;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   const resumeSnapshotRef = useRef<ResumeSnap | null>(null);
+
+  useEffect(() => {
+    return () => {
+      const s = storeRef.current;
+      const msgs = messagesRef.current;
+      if (s.activeConversationId && msgs.length > 0) {
+        const next = upsertReframeActiveMessages(s, msgs);
+        persistReframeStore(next);
+      }
+    };
+  }, []);
 
   const flushWith = useCallback((msgs: ChatMessage[]) => {
     setStore((prev) => {

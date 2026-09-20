@@ -59,8 +59,23 @@ export function ChatMode({
   const bottomRef = useRef<HTMLDivElement>(null);
   const storeRef = useRef(store);
   storeRef.current = store;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   const resumeSnapshotRef = useRef<ResumeSnap | null>(null);
+
+  // Flush current conversation to localStorage when the component unmounts
+  // (e.g. user switches to another tab or goes to Home), so nothing is lost.
+  useEffect(() => {
+    return () => {
+      const s = storeRef.current;
+      const msgs = messagesRef.current;
+      if (s.activeConversationId && msgs.length > 0) {
+        const next = upsertActiveMessages(s, msgs);
+        persistChatStore(next);
+      }
+    };
+  }, []);
 
   const flushWith = useCallback((msgs: ChatMessage[]) => {
     setStore((prev) => {
